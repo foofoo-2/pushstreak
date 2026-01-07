@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useVariations } from '../hooks/useVariations';
 import { api } from '../api/client';
 import { Trash2, RotateCcw, Download, Upload, Plus, Edit2, X, Save } from 'lucide-react';
-import { db } from '../db/db';
-import { exportDB } from 'dexie-export-import';
+
 
 export const SettingsView: React.FC = () => {
     const { variations, addVariation, updateVariation, deleteVariation, resetDefaults } = useVariations();
@@ -18,11 +17,12 @@ export const SettingsView: React.FC = () => {
     // Handlers for Export/Import
     const handleExport = async () => {
         try {
-            const blob = await exportDB(db);
+            const response = await api.get('/api/export');
+            const blob = new Blob([JSON.stringify(response, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `pushstreak-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.download = `pushstreak-data-${new Date().toISOString().split('T')[0]}.json`;
             link.click();
         } catch (error) {
             console.error('Export failed', error);

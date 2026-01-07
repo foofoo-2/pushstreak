@@ -171,21 +171,49 @@ app.delete('/api/entries/:id', (req, res) => {
 });
 
 
-// DATA IMPORT (JSON)
+// EXPORT
+app.get('/api/export', (req, res) => {
+    try {
+        const variations = db.prepare('SELECT * FROM variations').all();
+        const entries = db.prepare('SELECT * FROM entries').all().map(e => ({
+            ...e,
+            repsPerSet: e.repsPerSet ? JSON.parse(e.repsPerSet) : null
+        }));
+
+        res.json({
+            exportDate: new Date().toISOString(),
+            data: {
+                variations,
+                entries
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// IMPORT
 app.post('/api/import', (req, res) => {
     try {
         const { data } = req.body;
-        if (!data || !data.data || !data.data.data) {
-            return res.status(400).json({ error: 'Invalid Dexie export format' });
+        // Support both old Dexie structure (data.data.data) and new clean structure (data.data)
+        const tables = data.data?.data || data.data;
+
+        if (!tables) {
+            return res.status(400).json({ error: 'Invalid export format' });
         }
 
-        const tables = data.data.data;
-
         const importTransaction = db.transaction(() => {
-            // Import Variations
+            // 1. Clear existing data (Entries first due to FK)
+            if (tables.entries || tables.variations) {
+                db.prepare('DELETE FROM entries').run();
+            }
             if (tables.variations) {
                 db.prepare('DELETE FROM variations').run();
+            }
 
+            // 2. Import Variations
+            if (tables.variations) {
                 const insertVar = db.prepare(`
                     INSERT INTO variations (id, name, pointsPerRep, isDefault, createdAt, updatedAt)
                     VALUES (@id, @name, @pointsPerRep, @isDefault, @createdAt, @updatedAt)
@@ -196,16 +224,14 @@ app.post('/api/import', (req, res) => {
                         name: v.name,
                         pointsPerRep: v.pointsPerRep,
                         isDefault: v.isDefault ? 1 : 0,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString()
+                        createdAt: v.createdAt || new Date().toISOString(),
+                        updatedAt: v.updatedAt || new Date().toISOString()
                     });
                 }
             }
 
-            // Import Entries
+            // 3. Import Entries
             if (tables.entries) {
-                db.prepare('DELETE FROM entries').run();
-
                 const insertEntry = db.prepare(`
                     INSERT INTO entries (
                         id, date, time, variationId, sets, repsMode, 
@@ -219,13 +245,18 @@ app.post('/api/import', (req, res) => {
                 `);
 
                 for (const e of tables.entries) {
-                    insertEntry.run({
-                        ...e,
-                        repsPerSet: e.repsPerSet && Array.isArray(e.repsPerSet) ? JSON.stringify(e.repsPerSet) : null,
-                        time: e.time || null,
-                        createdAt: e.createdAt || new Date().toISOString(),
-                        updatedAt: e.updatedAt || new Date().toISOString()
-                    });
+                    try {
+                        insertEntry.run({
+                            ...e,
+                            repsPerSet: e.repsPerSet && Array.isArray(e.repsPerSet) ? JSON.stringify(e.repsPerSet) : null,
+                            time: e.time || null,
+                            createdAt: e.createdAt || new Date().toISOString(),
+                            updatedAt: e.updatedAt || new Date().toISOString()
+                        });
+                    } catch (entryErr) {
+                        console.error('Failed to insert entry:', e, entryErr);
+                        throw entryErr;
+                    }
                 }
             }
         });
@@ -233,7 +264,7 @@ app.post('/api/import', (req, res) => {
         importTransaction();
         res.json({ success: true, message: 'Import completed' });
     } catch (err) {
-        console.error(err);
+        console.error('Import transaction failed:', err);
         res.status(500).json({ error: err.message });
     }
 });
