@@ -21,6 +21,7 @@ export interface DailyLog {
 export interface Entry {
     id?: string; // UUID
     date: string; // YYYY-MM-DD (FK to DailyLog)
+    time: string; // HH:mm
     variationId: string;
     sets: number;
     repsMode: 'uniform' | 'perSet';

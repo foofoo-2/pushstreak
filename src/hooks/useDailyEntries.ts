@@ -20,6 +20,7 @@ export function useDailyEntries(dateStr: string) {
         repsMode: RepsMode,
         repsUniform: number | undefined,
         repsPerSet: number[] | undefined,
+        time: string,
         note?: string
     ) => {
         // 1. Fetch variation to get pointsPerRep
@@ -40,6 +41,7 @@ export function useDailyEntries(dateStr: string) {
         const newEntry: Entry = {
             id: uuidv4(),
             date: dateStr,
+            time,
             variationId,
             sets,
             repsMode,

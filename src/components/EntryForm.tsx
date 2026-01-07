@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import { useVariations } from '../hooks/useVariations';
 import type { RepsMode } from '../types';
 import { X, Save } from 'lucide-react';
@@ -10,6 +11,7 @@ interface EntryFormProps {
         repsMode: RepsMode,
         repsUniform: number | undefined,
         repsPerSet: number[] | undefined,
+        time: string,
         note?: string
     ) => void;
     onCancel: () => void;
@@ -23,6 +25,7 @@ export const EntryForm: React.FC<EntryFormProps> = ({ onCheckIn, onCancel }) => 
     const [repsMode, setRepsMode] = useState<RepsMode>('uniform');
     const [repsUniform, setRepsUniform] = useState<number>(10);
     const [repsPerSet, setRepsPerSet] = useState<string>('10,10,10'); // Managed as string for input
+    const [time, setTime] = useState<string>(format(new Date(), 'HH:mm'));
     const [note, setNote] = useState<string>('');
 
     // Set default variation once loaded
@@ -61,6 +64,7 @@ export const EntryForm: React.FC<EntryFormProps> = ({ onCheckIn, onCancel }) => 
             repsMode,
             repsMode === 'uniform' ? repsUniform : undefined,
             parsedRepsPerSet,
+            time,
             note
         );
     };
@@ -102,7 +106,17 @@ export const EntryForm: React.FC<EntryFormProps> = ({ onCheckIn, onCancel }) => 
                         </select>
                     </div>
 
-                    {/* Sets & Mode */}
+                    {/* Time */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time</label>
+                        <input
+                            type="time"
+                            value={time}
+                            onChange={(e) => setTime(e.target.value)}
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        />
+                    </div>
+
                     <div className="flex gap-4">
                         <div className="w-1/3">
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sets</label>
@@ -181,7 +195,7 @@ export const EntryForm: React.FC<EntryFormProps> = ({ onCheckIn, onCancel }) => 
                     </div>
 
                     {/* Summary Preview */}
-                    <div className="bg-blue-50 p-3 rounded-lg flex justify-between items-center text-blue-800">
+                    <div className="bg-blue-50 dark:bg-gray-900 p-3 rounded-lg flex justify-between items-center text-blue-800 dark:text-blue-300 border border-blue-100 dark:border-gray-800">
                         <div className="text-sm">
                             <span className="font-bold">{totalRepsCalc}</span> reps total
                         </div>
@@ -199,7 +213,7 @@ export const EntryForm: React.FC<EntryFormProps> = ({ onCheckIn, onCancel }) => 
                     </button>
 
                 </form>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };

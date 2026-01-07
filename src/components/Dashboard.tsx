@@ -105,8 +105,8 @@ export const Dashboard: React.FC = () => {
             {isEntryFormOpen && (
                 <EntryForm
                     onCancel={() => setIsEntryFormOpen(false)}
-                    onCheckIn={async (variationId, sets, repsMode, repsUniform, repsPerSet, note) => {
-                        await addEntry(variationId, sets, repsMode, repsUniform, repsPerSet, note);
+                    onCheckIn={async (variationId, sets, repsMode, repsUniform, repsPerSet, time, note) => {
+                        await addEntry(variationId, sets, repsMode, repsUniform, repsPerSet, time, note);
                         setIsEntryFormOpen(false);
                     }}
                 />
