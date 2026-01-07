@@ -14,6 +14,7 @@ function App() {
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/day/:date" element={<Dashboard />} />
             <Route path="/calendar" element={<CalendarView />} />
             <Route path="/stats" element={<StatsView />} />
             <Route path="/settings" element={<SettingsView />} />

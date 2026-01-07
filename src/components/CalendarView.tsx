@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { format, addMonths, subMonths } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCalendarData } from '../hooks/useCalendarData';
+import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 
 export const CalendarView: React.FC = () => {
@@ -45,10 +46,11 @@ export const CalendarView: React.FC = () => {
                 ))}
 
                 {monthData.map((day) => (
-                    <div
+                    <Link
+                        to={`/day/${day.dateStr}`}
                         key={day.dateStr}
                         className={clsx(
-                            "aspect-square rounded-lg flex flex-col items-center justify-center border relative transition-colors",
+                            "aspect-square rounded-lg flex flex-col items-center justify-center border relative transition-colors cursor-pointer hover:shadow-md",
                             {
                                 'bg-green-100 border-green-200 text-green-800 dark:bg-green-900/30 dark:border-green-800 dark:text-green-300': day.status === 'met',
                                 'bg-red-50 border-red-100 text-red-800 dark:bg-red-900/20 dark:border-red-900/40 dark:text-red-300': day.status === 'behind',
@@ -70,7 +72,7 @@ export const CalendarView: React.FC = () => {
                                 Miss
                             </span>
                         )}
-                    </div>
+                    </Link>
                 ))}
             </div>
 
