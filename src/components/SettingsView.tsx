@@ -74,12 +74,12 @@ export const SettingsView: React.FC = () => {
         <div className="space-y-8 pb-8">
 
             {/* Variations Section */}
-            <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                    <h2 className="font-bold text-gray-800">Variations</h2>
+            <section className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+                    <h2 className="font-bold text-gray-800 dark:text-gray-100">Variations</h2>
                     <button
                         onClick={() => setIsAdding(true)}
-                        className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg transition-colors"
+                        className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-1.5 rounded-lg transition-colors"
                         title="Add Variation"
                     >
                         <Plus size={20} />
@@ -87,17 +87,17 @@ export const SettingsView: React.FC = () => {
                 </div>
 
                 {isAdding && (
-                    <div className="p-4 bg-blue-50 border-b border-blue-100 animate-in fade-in">
+                    <div className="p-4 bg-blue-50 dark:bg-gray-800/80 border-b border-blue-100 dark:border-gray-700 animate-in fade-in">
                         <div className="flex gap-2 mb-2">
                             <input
-                                className="flex-1 p-2 rounded border border-blue-200 text-sm"
+                                className="flex-1 p-2 rounded border border-blue-200 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                 placeholder="Name (e.g. Diamond Push-up)"
                                 value={newVarName}
                                 onChange={e => setNewVarName(e.target.value)}
                                 autoFocus
                             />
                             <input
-                                className="w-20 p-2 rounded border border-blue-200 text-sm"
+                                className="w-20 p-2 rounded border border-blue-200 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                 type="number"
                                 step="0.1"
                                 placeholder="Pts"
@@ -106,39 +106,39 @@ export const SettingsView: React.FC = () => {
                             />
                         </div>
                         <div className="flex justify-end gap-2">
-                            <button onClick={() => setIsAdding(false)} className="text-gray-500 text-sm px-3 py-1">Cancel</button>
+                            <button onClick={() => setIsAdding(false)} className="text-gray-500 dark:text-gray-400 text-sm px-3 py-1">Cancel</button>
                             <button onClick={handleAdd} className="bg-blue-600 text-white text-sm px-3 py-1 rounded shadow-sm hover:bg-blue-700">Add</button>
                         </div>
                     </div>
                 )}
 
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-gray-100 dark:divide-gray-800">
                     {variations.map(v => (
-                        <div key={v.id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div key={v.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                             {isEditing === v.id ? (
                                 <div className="flex-1 flex items-center gap-2">
                                     <input
                                         value={editName}
                                         onChange={e => setEditName(e.target.value)}
-                                        className="flex-1 p-1 border rounded text-sm"
+                                        className="flex-1 p-1 border dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                     />
                                     <input
                                         value={editPoints}
                                         onChange={e => setEditPoints(e.target.value)}
                                         type="number" step="0.1"
-                                        className="w-16 p-1 border rounded text-sm"
+                                        className="w-16 p-1 border dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                     />
-                                    <button onClick={() => saveEdit(v.id!)} className="text-green-600 p-1"><Save size={18} /></button>
+                                    <button onClick={() => saveEdit(v.id!)} className="text-green-600 dark:text-green-400 p-1"><Save size={18} /></button>
                                     <button onClick={() => setIsEditing(null)} className="text-gray-400 p-1"><X size={18} /></button>
                                 </div>
                             ) : (
                                 <>
                                     <div>
-                                        <div className="font-medium text-gray-900">{v.name}</div>
-                                        <div className="text-xs text-gray-500">{v.pointsPerRep} pts/rep</div>
+                                        <div className="font-medium text-gray-900 dark:text-gray-100">{v.name}</div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400">{v.pointsPerRep} pts/rep</div>
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <button onClick={() => startEdit(v)} className="text-gray-400 hover:text-blue-600 p-2"><Edit2 size={16} /></button>
+                                        <button onClick={() => startEdit(v)} className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-2"><Edit2 size={16} /></button>
                                         <button onClick={() => deleteVariation(v.id!)} className="text-gray-400 hover:text-red-500 p-2"><Trash2 size={16} /></button>
                                     </div>
                                 </>
@@ -147,10 +147,10 @@ export const SettingsView: React.FC = () => {
                     ))}
                 </div>
 
-                <div className="p-3 bg-gray-50 border-t border-gray-100">
+                <div className="p-3 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800">
                     <button
                         onClick={resetDefaults}
-                        className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-700 w-full justify-center py-2"
+                        className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 w-full justify-center py-2"
                     >
                         <RotateCcw size={14} /> Reset to Defaults
                     </button>
@@ -158,32 +158,32 @@ export const SettingsView: React.FC = () => {
             </section>
 
             {/* Data Management Section */}
-            <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-4 border-b border-gray-100 bg-gray-50">
-                    <h2 className="font-bold text-gray-800">Data Management</h2>
+            <section className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                    <h2 className="font-bold text-gray-800 dark:text-gray-100">Data Management</h2>
                 </div>
                 <div className="p-4 space-y-4">
                     <button
                         onClick={handleExport}
-                        className="w-full flex items-center justify-center gap-2 p-3 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="w-full flex items-center justify-center gap-2 p-3 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                     >
                         <Download size={20} />
                         Export Data (JSON)
                     </button>
 
-                    <label className="w-full flex items-center justify-center gap-2 p-3 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer">
+                    <label className="w-full flex items-center justify-center gap-2 p-3 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer">
                         <Upload size={20} />
                         Import Data (JSON)
                         <input type="file" accept=".json" onChange={handleImport} className="hidden" />
                     </label>
 
-                    <p className="text-xs text-gray-400 text-center">
+                    <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
                         Importing will completely replace current data.
                     </p>
                 </div>
             </section>
 
-            <div className="text-center text-xs text-gray-300 pt-8">
+            <div className="text-center text-xs text-gray-300 dark:text-gray-600 pt-8">
                 PushStreak v0.1.0 • Built with ❤️
             </div>
         </div>
