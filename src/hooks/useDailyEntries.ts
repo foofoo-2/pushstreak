@@ -62,11 +62,51 @@ export function useDailyEntries(dateStr: string) {
         await db.entries.delete(entryId);
     };
 
+    const updateEntry = async (
+        entryId: string,
+        variationId: string,
+        sets: number,
+        repsMode: RepsMode,
+        repsUniform: number | undefined,
+        repsPerSet: number[] | undefined,
+        time: string,
+        note?: string
+    ) => {
+        // 1. Fetch variation to get pointsPerRep
+        const variation = await db.variations.get(variationId);
+        if (!variation) throw new Error('Variation not found');
+
+        // 2. Compute totals
+        let repsTotal = 0;
+        if (repsMode === 'uniform' && repsUniform) {
+            repsTotal = sets * repsUniform;
+        } else if (repsMode === 'perSet' && repsPerSet) {
+            repsTotal = repsPerSet.reduce((a, b) => a + b, 0);
+        }
+
+        const pointsTotal = repsTotal * variation.pointsPerRep;
+
+        // 3. Update DB
+        await db.entries.update(entryId, {
+            variationId,
+            sets,
+            repsMode,
+            repsUniform,
+            repsPerSet,
+            repsTotal,
+            pointsTotal,
+            note,
+            time,
+            updatedAt: new Date()
+        });
+    };
+
     return {
         entries: entries || [],
         variations: variations || [], // Helper to have variations available
         totalPoints,
         addEntry,
+        updateEntry,
         deleteEntry,
         isLoading: !entries || !variations
     };

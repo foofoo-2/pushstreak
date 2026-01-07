@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useVariations } from '../hooks/useVariations';
-import type { RepsMode } from '../types';
+import type { Entry, RepsMode } from '../types';
 import { X, Save } from 'lucide-react';
 
 interface EntryFormProps {
+    initialValues?: Entry;
     onCheckIn: (
         variationId: string,
         sets: number,
@@ -17,31 +18,34 @@ interface EntryFormProps {
     onCancel: () => void;
 }
 
-export const EntryForm: React.FC<EntryFormProps> = ({ onCheckIn, onCancel }) => {
+export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, onCancel }) => {
     const { variations, isLoading } = useVariations();
 
-    const [variationId, setVariationId] = useState<string>('');
-    const [sets, setSets] = useState<number>(3);
-    const [repsMode, setRepsMode] = useState<RepsMode>('uniform');
-    const [repsUniform, setRepsUniform] = useState<number>(10);
-    const [repsPerSet, setRepsPerSet] = useState<string>('10,10,10'); // Managed as string for input
-    const [time, setTime] = useState<string>(format(new Date(), 'HH:mm'));
-    const [note, setNote] = useState<string>('');
+    const [variationId, setVariationId] = useState<string>(initialValues?.variationId || '');
+    const [sets, setSets] = useState<number>(initialValues?.sets || 3);
+    const [repsMode, setRepsMode] = useState<RepsMode>(initialValues?.repsMode || 'uniform');
+    const [repsUniform, setRepsUniform] = useState<number>(initialValues?.repsUniform || 10);
+    const [repsPerSet, setRepsPerSet] = useState<string>(initialValues?.repsPerSet?.join(', ') || '10, 10, 10');
+    const [time, setTime] = useState<string>(initialValues?.time || format(new Date(), 'HH:mm'));
+    const [note, setNote] = useState<string>(initialValues?.note || '');
 
-    // Set default variation once loaded
+    // Set default variation once loaded, ONLY if not editing
     useEffect(() => {
-        if (variations.length > 0 && !variationId) {
+        if (!initialValues && variations.length > 0 && !variationId) {
             const def = variations.find(v => v.isDefault);
             setVariationId(def ? def.id! : variations[0].id!);
         }
-    }, [variations, variationId]);
+    }, [variations, variationId, initialValues]);
 
     // Update repsPerSet count when sets changes
     useEffect(() => {
         if (repsMode === 'perSet') {
             const current = repsPerSet.split(',').map((s: string) => s.trim());
+            // If we are editing and just opened, don't overwrite with default logic immediately if lengths match
+            // But here we want dynamic updates.
+            // Simple logic: resize array
             const newArr = Array(sets).fill('').map((_, i) => current[i] || '0');
-            setRepsPerSet(newArr.join(','));
+            setRepsPerSet(newArr.join(', '));
         }
     }, [sets]);
 
@@ -82,7 +86,7 @@ export const EntryForm: React.FC<EntryFormProps> = ({ onCheckIn, onCancel }) => 
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200 border dark:border-gray-700">
                 <div className="bg-gray-50 dark:bg-gray-900/50 px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                    <h3 className="font-bold text-gray-800 dark:text-gray-100">Log Entry</h3>
+                    <h3 className="font-bold text-gray-800 dark:text-gray-100">{initialValues ? 'Edit Entry' : 'Log Entry'}</h3>
                     <button onClick={onCancel} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
                         <X size={20} />
                     </button>
@@ -209,7 +213,7 @@ export const EntryForm: React.FC<EntryFormProps> = ({ onCheckIn, onCancel }) => 
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 transition-all flex justify-center items-center gap-2"
                     >
                         <Save size={20} />
-                        Log Entry
+                        {initialValues ? 'Update Entry' : 'Log Entry'}
                     </button>
 
                 </form>

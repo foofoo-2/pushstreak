@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDayTarget } from '../hooks/useDayTarget';
 import { useDailyEntries } from '../hooks/useDailyEntries';
+import type { Entry } from '../types';
 import { EntryList } from './EntryList';
 import { EntryForm } from './EntryForm';
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -17,8 +18,9 @@ export const Dashboard: React.FC = () => {
     const validDate = isNaN(currentDate.getTime()) ? new Date() : currentDate;
 
     const { dateStr, targetPoints } = useDayTarget(validDate);
-    const { entries, totalPoints, isLoading, deleteEntry, addEntry } = useDailyEntries(dateStr);
+    const { entries, totalPoints, isLoading, deleteEntry, addEntry, updateEntry } = useDailyEntries(dateStr);
     const [isEntryFormOpen, setIsEntryFormOpen] = useState(false);
+    const [editingEntry, setEditingEntry] = useState<Entry | undefined>(undefined);
 
     const isToday = isSameDay(validDate, new Date());
 
@@ -30,6 +32,16 @@ export const Dashboard: React.FC = () => {
     const handleNextDay = () => {
         const next = addDays(validDate, 1);
         navigate(`/day/${format(next, 'yyyy-MM-dd')}`);
+    };
+
+    const handleEditEntry = (entry: Entry) => {
+        setEditingEntry(entry);
+        setIsEntryFormOpen(true);
+    };
+
+    const handleCloseForm = () => {
+        setIsEntryFormOpen(false);
+        setEditingEntry(undefined);
     };
 
     // Guard against 0 target points to avoid division by zero (unlikely but safe)
@@ -86,7 +98,10 @@ export const Dashboard: React.FC = () => {
                 <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">History</h3>
                 <button
                     className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition-colors text-sm font-semibold"
-                    onClick={() => setIsEntryFormOpen(true)}
+                    onClick={() => {
+                        setEditingEntry(undefined);
+                        setIsEntryFormOpen(true);
+                    }}
                 >
                     <Plus size={18} />
                     Log Sets
@@ -94,7 +109,7 @@ export const Dashboard: React.FC = () => {
             </div>
 
             {entries.length > 0 ? (
-                <EntryList entries={entries} onDelete={deleteEntry} />
+                <EntryList entries={entries} onDelete={deleteEntry} onEdit={handleEditEntry} />
             ) : (
                 <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
                     <p className="text-gray-500 dark:text-gray-400">No push-ups logged yet for this day.</p>
@@ -104,10 +119,15 @@ export const Dashboard: React.FC = () => {
 
             {isEntryFormOpen && (
                 <EntryForm
-                    onCancel={() => setIsEntryFormOpen(false)}
+                    initialValues={editingEntry}
+                    onCancel={handleCloseForm}
                     onCheckIn={async (variationId, sets, repsMode, repsUniform, repsPerSet, time, note) => {
-                        await addEntry(variationId, sets, repsMode, repsUniform, repsPerSet, time, note);
-                        setIsEntryFormOpen(false);
+                        if (editingEntry && editingEntry.id) {
+                            await updateEntry(editingEntry.id, variationId, sets, repsMode, repsUniform, repsPerSet, time, note);
+                        } else {
+                            await addEntry(variationId, sets, repsMode, repsUniform, repsPerSet, time, note);
+                        }
+                        handleCloseForm();
                     }}
                 />
             )}

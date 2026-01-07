@@ -1,14 +1,15 @@
 import React from 'react';
 import type { Entry } from '../types';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Edit2 } from 'lucide-react';
 import { useVariations } from '../hooks/useVariations';
 
 interface EntryListProps {
     entries: Entry[];
     onDelete: (id: string) => void;
+    onEdit: (entry: Entry) => void;
 }
 
-export const EntryList: React.FC<EntryListProps> = ({ entries, onDelete }) => {
+export const EntryList: React.FC<EntryListProps> = ({ entries, onDelete, onEdit }) => {
     const { variations } = useVariations();
 
     return (
@@ -34,6 +35,13 @@ export const EntryList: React.FC<EntryListProps> = ({ entries, onDelete }) => {
                                 {entry.pointsTotal.toFixed(1)} pts
                             </div>
                             <button
+                                onClick={() => entry.id && onEdit(entry)}
+                                className="text-gray-400 hover:text-blue-500 transition-colors p-1"
+                                aria-label="Edit entry"
+                            >
+                                <Edit2 size={18} />
+                            </button>
+                            <button
                                 onClick={() => entry.id && onDelete(entry.id)}
                                 className="text-gray-400 hover:text-red-500 transition-colors p-1"
                                 aria-label="Delete entry"
@@ -44,6 +52,6 @@ export const EntryList: React.FC<EntryListProps> = ({ entries, onDelete }) => {
                     </div>
                 );
             })}
-        </div>
+        </div >
     );
 };
