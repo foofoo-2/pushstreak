@@ -79,13 +79,15 @@ app.delete('/api/variations/:id', (req, res) => {
 // Entries
 app.get('/api/entries', (req, res) => {
     try {
-        const { date, startDate, endDate } = req.query;
+        const { date, startDate, endDate, getAll } = req.query;
 
         let rows = [];
         if (date) {
             rows = db.prepare('SELECT * FROM entries WHERE date = ?').all(date);
         } else if (startDate && endDate) {
             rows = db.prepare('SELECT * FROM entries WHERE date BETWEEN ? AND ?').all(startDate, endDate);
+        } else if (getAll === 'true') {
+            rows = db.prepare('SELECT * FROM entries').all();
         } else {
             return res.json([]);
         }

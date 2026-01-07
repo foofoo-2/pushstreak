@@ -1,11 +1,26 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db/db';
+import { useState, useEffect } from 'react';
+import { api } from '../api/client';
 import { format, eachDayOfInterval, startOfYear, parseISO, subDays, getDayOfYear } from 'date-fns';
+import type { Entry } from '../types';
 
 export function useStatsData() {
-    const allEntries = useLiveQuery(() => db.entries.toArray());
+    const [allEntries, setEntries] = useState<Entry[] | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    if (!allEntries) {
+    useEffect(() => {
+        setIsLoading(true);
+        api.get('/api/entries?getAll=true')
+            .then(data => {
+                setEntries(data);
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error(err);
+                setIsLoading(false);
+            });
+    }, []);
+
+    if (isLoading || !allEntries) {
         return { isLoading: true, stats: null, chartData: [] };
     }
 
