@@ -1,45 +1,43 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db/db';
+import { useState, useEffect } from 'react';
+import { api } from '../api/client';
 import type { Variation } from '../types';
-import { v4 as uuidv4 } from 'uuid';
 
 export function useVariations() {
-    const variations = useLiveQuery(() => db.variations.toArray());
+    const [variations, setVariations] = useState<Variation[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+    useEffect(() => {
+        api.get('/api/variations')
+            .then(data => {
+                setVariations(data);
+                setIsLoading(false);
+            })
+            .catch(err => console.error(err));
+    }, [refreshTrigger]);
 
     const addVariation = async (name: string, pointsPerRep: number) => {
-        const newVariation: Variation = {
-            id: uuidv4(),
-            name,
-            pointsPerRep,
-            isDefault: false
-        };
-        await db.variations.add(newVariation);
+        await api.post('/api/variations', { name, pointsPerRep });
+        setRefreshTrigger(prev => prev + 1);
     };
 
     const updateVariation = async (id: string, updates: Partial<Variation>) => {
-        await db.variations.update(id, updates);
+        await api.put(`/api/variations/${id}`, updates);
+        setRefreshTrigger(prev => prev + 1);
     };
 
     const deleteVariation = async (id: string) => {
-        // Optional: Check if used in entries? 
-        // PRD doesn't strictly say prevent delete, but it's good practice.
-        // For MVP, if we delete, historical entries might lose Name ref if we don't snapshot it.
-        // Our EntryList looks up variation by ID. If deleted, it says "Unknown".
-        // Better to soft delete or warn. For MVP, we'll just allow delete.
-        await db.variations.delete(id);
+        await api.delete(`/api/variations/${id}`);
+        setRefreshTrigger(prev => prev + 1);
     };
 
     const resetDefaults = async () => {
-        await db.variations.clear();
-        // Re-seed is handled by db class on populate, but that only runs on empty DB creation usually?
-        // We can manually re-insert defaults.
-        const { defaultVariations } = await import('../db/defaultVariations'); // Dynamic import to avoid cycles?
-        await db.variations.bulkAdd(defaultVariations);
+        alert('To reset defaults, please delete the database file or use an admin tool. Server reset not implemented.');
     };
 
     return {
-        variations: variations || [],
-        isLoading: !variations,
+        variations,
+        isLoading,
         addVariation,
         updateVariation,
         deleteVariation,

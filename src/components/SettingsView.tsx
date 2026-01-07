@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useVariations } from '../hooks/useVariations';
+import { api } from '../api/client';
 import { Trash2, RotateCcw, Download, Upload, Plus, Edit2, X, Save } from 'lucide-react';
 import { db } from '../db/db';
-import { exportDB, importDB } from 'dexie-export-import';
+import { exportDB } from 'dexie-export-import';
 
 export const SettingsView: React.FC = () => {
     const { variations, addVariation, updateVariation, deleteVariation, resetDefaults } = useVariations();
@@ -33,21 +34,30 @@ export const SettingsView: React.FC = () => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (!confirm('This will overwrite current data. Continue?')) {
+        if (!confirm('This will overwrite all server data. Continue?')) {
             e.target.value = ''; // Reset input
             return;
         }
 
-        try {
-            await db.delete();
-            await db.open();
-            await importDB(file, { overwriteValues: true } as any);
-            alert('Import successful! Reloading...');
-            window.location.reload();
-        } catch (error) {
-            console.error('Import failed', error);
-            alert('Import failed');
-        }
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const jsonContent = event.target?.result;
+                if (typeof jsonContent !== 'string') return;
+
+                const data = JSON.parse(jsonContent);
+
+                // Send to server
+                await api.post('/api/import', { data });
+
+                alert('Import successful! Reloading...');
+                window.location.reload();
+            } catch (error) {
+                console.error('Import failed', error);
+                alert('Import failed');
+            }
+        };
+        reader.readAsText(file);
     };
 
     // Handlers for CRUD

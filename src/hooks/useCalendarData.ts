@@ -1,6 +1,7 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db/db';
+import { useState, useEffect } from 'react';
+import { api } from '../api/client';
 import { startOfMonth, endOfMonth, format, eachDayOfInterval, getDayOfYear } from 'date-fns';
+import type { Entry } from '../types';
 
 export interface DayStatus {
     dateStr: string;
@@ -11,16 +12,28 @@ export interface DayStatus {
 }
 
 export function useCalendarData(currentDate: Date) {
+    const [entries, setEntries] = useState<Entry[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
     const start = startOfMonth(currentDate);
     const end = endOfMonth(currentDate);
     const startStr = format(start, 'yyyy-MM-dd');
     const endStr = format(end, 'yyyy-MM-dd');
 
-    // Query all entries for the month
-    const entries = useLiveQuery(
-        () => db.entries.where('date').between(startStr, endStr, true, true).toArray(),
-        [startStr, endStr]
-    );
+    useEffect(() => {
+        setIsLoading(true);
+        console.log(`Fetching calendar data for ${startStr} to ${endStr}`);
+        api.get(`/api/entries?startDate=${startStr}&endDate=${endStr}`)
+            .then(data => {
+                console.log('Calendar entries fetched:', data);
+                setEntries(data);
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error(err);
+                setIsLoading(false);
+            });
+    }, [startStr, endStr]);
 
     const daysInMonth = eachDayOfInterval({ start, end });
     const todayStr = format(new Date(), 'yyyy-MM-dd');
@@ -30,7 +43,7 @@ export function useCalendarData(currentDate: Date) {
         const dayNumber = getDayOfYear(date);
         const targetPoints = dayNumber; // Simple logic: target = day number
 
-        const dayEntries = entries?.filter(e => e.date === dateStr) || [];
+        const dayEntries = entries.filter(e => e.date === dateStr);
         const totalPoints = dayEntries.reduce((sum, e) => sum + e.pointsTotal, 0);
 
         let status: DayStatus['status'] = 'none';
@@ -40,8 +53,8 @@ export function useCalendarData(currentDate: Date) {
         } else if (dayEntries.length > 0) {
             status = totalPoints >= targetPoints ? 'met' : 'behind';
         } else if (dateStr < todayStr) {
-            // Should distinguish between "No Data" and "Rest" if implemented
-            // For now, if past and no data, it's just 'none' (or could be 'behind' if we want to be strict)
+            // Check if we missed it
+            // For now 'none', can change logic later
             status = 'none';
         }
 
@@ -56,6 +69,6 @@ export function useCalendarData(currentDate: Date) {
 
     return {
         monthData,
-        isLoading: !entries
+        isLoading
     };
 }

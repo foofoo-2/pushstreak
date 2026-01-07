@@ -1,18 +1,34 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db/db';
-import type { Entry, RepsMode } from '../types';
+import { useState, useEffect } from 'react';
+import { api } from '../api/client';
+import type { Entry, RepsMode, Variation } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 export function useDailyEntries(dateStr: string) {
-    const entries = useLiveQuery(
-        () => db.entries.where('date').equals(dateStr).toArray(),
-        [dateStr]
-    );
+    const [entries, setEntries] = useState<Entry[]>([]);
+    const [variations, setVariations] = useState<Variation[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-    const variations = useLiveQuery(() => db.variations.toArray());
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [entriesData, variationsData] = await Promise.all([
+                    api.get(`/api/entries?date=${dateStr}`),
+                    api.get('/api/variations')
+                ]);
+                setEntries(entriesData);
+                setVariations(variationsData);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchData();
+    }, [dateStr, refreshTrigger]);
 
     // Derive total points
-    const totalPoints = entries?.reduce((sum, e) => sum + e.pointsTotal, 0) || 0;
+    const totalPoints = entries.reduce((sum, e) => sum + e.pointsTotal, 0);
 
     const addEntry = async (
         variationId: string,
@@ -23,8 +39,9 @@ export function useDailyEntries(dateStr: string) {
         time: string,
         note?: string
     ) => {
-        // 1. Fetch variation to get pointsPerRep
-        const variation = await db.variations.get(variationId);
+        // 1. Fetch variation to get pointsPerRep (from local state is fine if up to date, or fetch)
+        // We have variations in state, let's use that.
+        const variation = variations.find(v => v.id === variationId);
         if (!variation) throw new Error('Variation not found');
 
         // 2. Compute totals
@@ -54,12 +71,14 @@ export function useDailyEntries(dateStr: string) {
             updatedAt: new Date()
         };
 
-        // 4. Add to DB
-        await db.entries.add(newEntry);
+        // 4. Send to API
+        await api.post('/api/entries', newEntry);
+        setRefreshTrigger(prev => prev + 1);
     };
 
     const deleteEntry = async (entryId: string) => {
-        await db.entries.delete(entryId);
+        await api.delete(`/api/entries/${entryId}`);
+        setRefreshTrigger(prev => prev + 1);
     };
 
     const updateEntry = async (
@@ -72,11 +91,9 @@ export function useDailyEntries(dateStr: string) {
         time: string,
         note?: string
     ) => {
-        // 1. Fetch variation to get pointsPerRep
-        const variation = await db.variations.get(variationId);
+        const variation = variations.find(v => v.id === variationId);
         if (!variation) throw new Error('Variation not found');
 
-        // 2. Compute totals
         let repsTotal = 0;
         if (repsMode === 'uniform' && repsUniform) {
             repsTotal = sets * repsUniform;
@@ -86,8 +103,7 @@ export function useDailyEntries(dateStr: string) {
 
         const pointsTotal = repsTotal * variation.pointsPerRep;
 
-        // 3. Update DB
-        await db.entries.update(entryId, {
+        await api.put(`/api/entries/${entryId}`, {
             variationId,
             sets,
             repsMode,
@@ -96,18 +112,18 @@ export function useDailyEntries(dateStr: string) {
             repsTotal,
             pointsTotal,
             note,
-            time,
-            updatedAt: new Date()
+            time
         });
+        setRefreshTrigger(prev => prev + 1);
     };
 
     return {
-        entries: entries || [],
-        variations: variations || [], // Helper to have variations available
+        entries,
+        variations,
         totalPoints,
         addEntry,
         updateEntry,
         deleteEntry,
-        isLoading: !entries || !variations
+        isLoading
     };
 }
