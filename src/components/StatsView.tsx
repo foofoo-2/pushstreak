@@ -12,34 +12,34 @@ export const StatsView: React.FC = () => {
         <div className="space-y-6">
             {/* Cards Grid */}
             <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center text-center">
                     <Trophy className="text-yellow-500 mb-2" size={24} />
-                    <div className="text-2xl font-bold text-gray-800">{stats.totalPoints.toFixed(0)}</div>
-                    <div className="text-xs text-gray-400 uppercase font-semibold">Total Points</div>
+                    <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.totalPoints.toFixed(0)}</div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">Total Points</div>
                 </div>
 
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center text-center">
                     <Activity className="text-blue-500 mb-2" size={24} />
-                    <div className="text-2xl font-bold text-gray-800">{stats.currentStreak}</div>
-                    <div className="text-xs text-gray-400 uppercase font-semibold">Current Streak</div>
+                    <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.currentStreak}</div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">Current Streak</div>
                 </div>
 
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center text-center">
                     <TrendingUp className="text-green-500 mb-2" size={24} />
-                    <div className="text-2xl font-bold text-gray-800">{stats.bestStreak}</div>
-                    <div className="text-xs text-gray-400 uppercase font-semibold">Best Streak</div>
+                    <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.bestStreak}</div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">Best Streak</div>
                 </div>
 
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center text-center">
                     <CalendarIcon className="text-purple-500 mb-2" size={24} />
-                    <div className="text-2xl font-bold text-gray-800">{stats.adherence}%</div>
-                    <div className="text-xs text-gray-400 uppercase font-semibold">Adherence (YTD)</div>
+                    <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.adherence}%</div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500 uppercase font-semibold">Adherence (YTD)</div>
                 </div>
             </div>
 
             {/* Chart */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <h3 className="text-sm font-bold text-gray-700 mb-4">Points Over Time</h3>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200 mb-4">Points Over Time</h3>
                 <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={chartData}>
@@ -49,14 +49,14 @@ export const StatsView: React.FC = () => {
                                     <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" className="dark:stroke-gray-700" />
                             <XAxis
                                 dataKey="date"
-                                tick={{ fontSize: 10 }}
+                                tick={{ fontSize: 10, fill: '#6b7280' }}
                                 interval="preserveStartEnd"
                                 minTickGap={30}
                             />
-                            <YAxis tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} />
                             <Tooltip
                                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                             />

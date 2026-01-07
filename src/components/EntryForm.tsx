@@ -76,10 +76,10 @@ export const EntryForm: React.FC<EntryFormProps> = ({ onCheckIn, onCancel }) => 
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                <div className="bg-gray-50 px-4 py-3 border-b flex justify-between items-center">
-                    <h3 className="font-bold text-gray-800">Log Entry</h3>
-                    <button onClick={onCancel} className="text-gray-400 hover:text-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200 border dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900/50 px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                    <h3 className="font-bold text-gray-800 dark:text-gray-100">Log Entry</h3>
+                    <button onClick={onCancel} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
                         <X size={20} />
                     </button>
                 </div>
@@ -88,11 +88,11 @@ export const EntryForm: React.FC<EntryFormProps> = ({ onCheckIn, onCancel }) => 
 
                     {/* Variation Selection */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Variation</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Variation</label>
                         <select
                             value={variationId}
                             onChange={(e) => setVariationId(e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         >
                             {variations.map(v => (
                                 <option key={v.id} value={v.id}>
@@ -105,38 +105,38 @@ export const EntryForm: React.FC<EntryFormProps> = ({ onCheckIn, onCancel }) => 
                     {/* Sets & Mode */}
                     <div className="flex gap-4">
                         <div className="w-1/3">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Sets</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sets</label>
                             <div className="flex items-center">
                                 <button
                                     type="button"
                                     onClick={() => setSets(Math.max(1, sets - 1))}
-                                    className="w-8 h-8 bg-gray-100 rounded-l-lg hover:bg-gray-200"
+                                    className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-l-lg hover:bg-gray-200 dark:hover:bg-gray-600"
                                 >-</button>
-                                <div className="flex-1 text-center border-y border-gray-100 h-8 flex items-center justify-center font-medium">
+                                <div className="flex-1 text-center border-y border-gray-100 dark:border-gray-700 h-8 flex items-center justify-center font-medium dark:text-gray-200">
                                     {sets}
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => setSets(sets + 1)}
-                                    className="w-8 h-8 bg-gray-100 rounded-r-lg hover:bg-gray-200"
+                                    className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-r-lg hover:bg-gray-200 dark:hover:bg-gray-600"
                                 >+</button>
                             </div>
                         </div>
 
                         <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Mode</label>
-                            <div className="flex bg-gray-100 rounded-lg p-1">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mode</label>
+                            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                                 <button
                                     type="button"
                                     onClick={() => setRepsMode('uniform')}
-                                    className={`flex-1 text-sm py-1 rounded-md transition-all ${repsMode === 'uniform' ? 'bg-white shadow-sm text-blue-600 font-medium' : 'text-gray-500'}`}
+                                    className={`flex-1 text-sm py-1 rounded-md transition-all ${repsMode === 'uniform' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-500 dark:text-gray-400'}`}
                                 >
                                     Uniform
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setRepsMode('perSet')}
-                                    className={`flex-1 text-sm py-1 rounded-md transition-all ${repsMode === 'perSet' ? 'bg-white shadow-sm text-blue-600 font-medium' : 'text-gray-500'}`}
+                                    className={`flex-1 text-sm py-1 rounded-md transition-all ${repsMode === 'perSet' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-500 dark:text-gray-400'}`}
                                 >
                                     Per Set
                                 </button>
@@ -146,23 +146,23 @@ export const EntryForm: React.FC<EntryFormProps> = ({ onCheckIn, onCancel }) => 
 
                     {/* Reps Input */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Reps</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reps</label>
                         {repsMode === 'uniform' ? (
                             <input
                                 type="number"
                                 value={repsUniform}
                                 onChange={(e) => setRepsUniform(parseInt(e.target.value) || 0)}
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                             />
                         ) : (
                             <div className="space-y-2">
-                                <p className="text-xs text-gray-500">Enter reps for {sets} sets, comma separated:</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Enter reps for {sets} sets, comma separated:</p>
                                 <input
                                     type="text"
                                     value={repsPerSet}
                                     onChange={(e) => setRepsPerSet(e.target.value)}
                                     placeholder="10, 10, 8..."
-                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                 />
                             </div>
                         )}
@@ -170,12 +170,12 @@ export const EntryForm: React.FC<EntryFormProps> = ({ onCheckIn, onCancel }) => 
 
                     {/* Note */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Note (Optional)</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Note (Optional)</label>
                         <input
                             type="text"
                             value={note}
                             onChange={(e) => setNote(e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-lg text-sm text-gray-600"
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700"
                             placeholder="e.g., Felt strong today"
                         />
                     </div>

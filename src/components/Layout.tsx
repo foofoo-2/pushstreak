@@ -5,16 +5,16 @@ import clsx from 'clsx';
 
 export const Layout: React.FC = () => {
     return (
-        <div className="flex flex-col h-screen bg-gray-50 text-gray-900 font-sans">
-            <header className="bg-white shadow-sm p-4 sticky top-0 z-10">
-                <h1 className="text-xl font-bold text-center text-blue-600">PushStreak</h1>
+        <div className="flex flex-col h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 font-sans transition-colors duration-200">
+            <header className="bg-white dark:bg-gray-900 shadow-sm p-4 sticky top-0 z-10 border-b border-gray-100 dark:border-gray-800">
+                <h1 className="text-xl font-bold text-center text-blue-600 dark:text-blue-500">PushStreak</h1>
             </header>
 
             <main className="flex-1 overflow-y-auto p-4 max-w-md mx-auto w-full">
                 <Outlet />
             </main>
 
-            <nav className="bg-white border-t border-gray-200">
+            <nav className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
                 <ul className="flex justify-around items-center h-16 max-w-md mx-auto w-full">
                     <li>
                         <NavLink
@@ -22,7 +22,9 @@ export const Layout: React.FC = () => {
                             className={({ isActive }) =>
                                 clsx(
                                     "flex flex-col items-center p-2 rounded-lg transition-colors",
-                                    isActive ? "text-blue-600 bg-blue-50" : "text-gray-500 hover:text-gray-700"
+                                    isActive
+                                        ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400"
+                                        : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                 )
                             }
                         >
@@ -36,7 +38,9 @@ export const Layout: React.FC = () => {
                             className={({ isActive }) =>
                                 clsx(
                                     "flex flex-col items-center p-2 rounded-lg transition-colors",
-                                    isActive ? "text-blue-600 bg-blue-50" : "text-gray-500 hover:text-gray-700"
+                                    isActive
+                                        ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400"
+                                        : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                 )
                             }
                         >
@@ -50,7 +54,9 @@ export const Layout: React.FC = () => {
                             className={({ isActive }) =>
                                 clsx(
                                     "flex flex-col items-center p-2 rounded-lg transition-colors",
-                                    isActive ? "text-blue-600 bg-blue-50" : "text-gray-500 hover:text-gray-700"
+                                    isActive
+                                        ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400"
+                                        : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                 )
                             }
                         >
@@ -64,7 +70,9 @@ export const Layout: React.FC = () => {
                             className={({ isActive }) =>
                                 clsx(
                                     "flex flex-col items-center p-2 rounded-lg transition-colors",
-                                    isActive ? "text-blue-600 bg-blue-50" : "text-gray-500 hover:text-gray-700"
+                                    isActive
+                                        ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400"
+                                        : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                 )
                             }
                         >
