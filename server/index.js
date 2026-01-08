@@ -16,6 +16,39 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' })); // Higher limit for import
 app.use(express.static(path.join(__dirname, '../dist')));
 
+// --- AUTHENTICATION ---
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+const SESSIONS = new Set(); // Simple in-memory session store
+
+app.post('/api/login', (req, res) => {
+    const { password } = req.body;
+    if (password === ADMIN_PASSWORD) {
+        const token = randomUUID();
+        SESSIONS.add(token);
+        res.json({ token, success: true });
+    } else {
+        res.status(401).json({ error: 'Invalid password' });
+    }
+});
+
+const authMiddleware = (req, res, next) => {
+    // Explicitly exclude login just in case, though order should handle it
+    if (req.path === '/api/login') return next();
+    if (req.path.startsWith('/api/import')) return next();
+
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token || !SESSIONS.has(token)) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    next();
+};
+
+// Apply auth middleware to all OTHER API routes
+app.use('/api', authMiddleware);
+
+
 // --- API ROUTES ---
 
 // Variations
