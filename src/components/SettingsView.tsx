@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useVariations } from '../hooks/useVariations';
 import { api } from '../api/client';
-import { Trash2, RotateCcw, Download, Upload, Plus, Edit2, X, Save } from 'lucide-react';
+import { Trash2, RotateCcw, Download, Upload, Plus, Edit2, X, Save, Star } from 'lucide-react';
 
 
 export const SettingsView: React.FC = () => {
-    const { variations, addVariation, updateVariation, deleteVariation, resetDefaults } = useVariations();
+    const { variations, addVariation, updateVariation, deleteVariation, setDefault, resetDefaults } = useVariations();
     const [isEditing, setIsEditing] = useState<string | null>(null); // ID of variation being edited
     const [editName, setEditName] = useState('');
     const [editPoints, setEditPoints] = useState('0');
@@ -148,6 +148,13 @@ export const SettingsView: React.FC = () => {
                                         <div className="text-xs text-gray-500 dark:text-gray-400">{v.pointsPerRep} pts/rep</div>
                                     </div>
                                     <div className="flex items-center gap-1">
+                                        <button
+                                            onClick={() => setDefault(v.id!)}
+                                            className={`p-2 transition-colors ${v.isDefault ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-400'}`}
+                                            title={v.isDefault ? "Default Variation" : "Set as Default"}
+                                        >
+                                            <Star size={16} fill={v.isDefault ? "currentColor" : "none"} />
+                                        </button>
                                         <button onClick={() => startEdit(v)} className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-2"><Edit2 size={16} /></button>
                                         <button onClick={() => deleteVariation(v.id!)} className="text-gray-400 hover:text-red-500 p-2"><Trash2 size={16} /></button>
                                     </div>

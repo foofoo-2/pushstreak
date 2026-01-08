@@ -52,9 +52,7 @@ const initSchema = () => {
         const defaults = [
             { id: 'v1', name: 'Standard Floor Push-up', pointsPerRep: 1.5, isDefault: 1 },
             { id: 'v2', name: 'Knee Push-up', pointsPerRep: 1.0, isDefault: 0 },
-            { id: 'v3', name: 'Wall Push-up', pointsPerRep: 0.25, isDefault: 0 },
-            { id: 'v4', name: 'Low Incline (Chair/Bed)', pointsPerRep: 0.75, isDefault: 0 },
-            { id: 'v5', name: 'High Incline (Table/Desk)', pointsPerRep: 0.5, isDefault: 0 },
+            { id: 'v5', name: 'Incline (Table/Desk)', pointsPerRep: 0.5, isDefault: 0 },
             { id: 'v6', name: 'Decline (Feet Elevated)', pointsPerRep: 2.0, isDefault: 0 },
         ];
 

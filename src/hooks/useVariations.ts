@@ -31,8 +31,15 @@ export function useVariations() {
         setRefreshTrigger(prev => prev + 1);
     };
 
+    const setDefault = async (id: string) => {
+        await api.put(`/api/variations/${id}/default`, {});
+        setRefreshTrigger(prev => prev + 1);
+    };
+
     const resetDefaults = async () => {
-        alert('To reset defaults, please delete the database file or use an admin tool. Server reset not implemented.');
+        if (!confirm('This will reset all variations to the default list. Existing entries might point to deleted IDs. Continue?')) return;
+        await api.post('/api/variations/reset', {});
+        setRefreshTrigger(prev => prev + 1);
     };
 
     return {
@@ -41,6 +48,7 @@ export function useVariations() {
         addVariation,
         updateVariation,
         deleteVariation,
+        setDefault,
         resetDefaults
     };
 }

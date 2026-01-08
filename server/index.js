@@ -54,12 +54,31 @@ app.use('/api', authMiddleware);
 // Variations
 app.get('/api/variations', (req, res) => {
     try {
-        const rows = db.prepare('SELECT * FROM variations').all();
+        const rows = db.prepare('SELECT * FROM variations ORDER BY pointsPerRep ASC').all();
         const mapped = rows.map(r => ({
             ...r,
             isDefault: !!r.isDefault
         }));
         res.json(mapped);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.put('/api/variations/:id/default', (req, res) => {
+    try {
+        const { id } = req.params;
+        const now = new Date().toISOString();
+
+        const transaction = db.transaction(() => {
+            // Unset current default
+            db.prepare('UPDATE variations SET isDefault = 0, updatedAt = ?').run(now);
+            // Set new default
+            db.prepare('UPDATE variations SET isDefault = 1, updatedAt = ? WHERE id = ?').run(now, id);
+        });
+
+        transaction();
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -105,6 +124,53 @@ app.delete('/api/variations/:id', (req, res) => {
         db.prepare('DELETE FROM variations WHERE id = ?').run(id);
         res.json({ success: true });
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/variations/reset', (req, res) => {
+    try {
+        const now = new Date().toISOString();
+
+        const transaction = db.transaction(() => {
+            // 1. Map orphaned entries to nearest surviving variation
+            // v3 (Wall) -> v2 (Knee)
+            db.prepare("UPDATE entries SET variationId = 'v2' WHERE variationId = 'v3'").run();
+            // v4 (Low Incline) -> v5 (High Incline)
+            db.prepare("UPDATE entries SET variationId = 'v5' WHERE variationId = 'v4'").run();
+
+            // 2. Delete the removed variations
+            db.prepare("DELETE FROM variations WHERE id IN ('v3', 'v4')").run();
+
+            // 3. Update/Insert the desired variations
+            // v1: Standard (Keep/Ensure)
+            db.prepare(`INSERT OR REPLACE INTO variations (id, name, pointsPerRep, isDefault, createdAt, updatedAt) 
+                VALUES ('v1', 'Standard Floor Push-up', 1.5, 1, COALESCE((SELECT createdAt FROM variations WHERE id='v1'), ?), ?)`)
+                .run(now, now);
+
+            // v2: Knee (Keep/Ensure)
+            db.prepare(`INSERT OR REPLACE INTO variations (id, name, pointsPerRep, isDefault, createdAt, updatedAt) 
+                VALUES ('v2', 'Knee Push-up', 1.0, 0, COALESCE((SELECT createdAt FROM variations WHERE id='v2'), ?), ?)`)
+                .run(now, now);
+
+            // v5: High Incline -> Incline (Rename)
+            db.prepare(`INSERT OR REPLACE INTO variations (id, name, pointsPerRep, isDefault, createdAt, updatedAt) 
+                VALUES ('v5', 'Incline (Table/Desk)', 0.5, 0, COALESCE((SELECT createdAt FROM variations WHERE id='v5'), ?), ?)`)
+                .run(now, now);
+
+            // v6: Decline (Keep/Ensure)
+            db.prepare(`INSERT OR REPLACE INTO variations (id, name, pointsPerRep, isDefault, createdAt, updatedAt) 
+                VALUES ('v6', 'Decline (Feet Elevated)', 2.0, 0, COALESCE((SELECT createdAt FROM variations WHERE id='v6'), ?), ?)`)
+                .run(now, now);
+
+            // Ensure only one default (v1)
+            db.prepare("UPDATE variations SET isDefault = 0 WHERE id != 'v1'").run();
+        });
+
+        transaction();
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
         res.status(500).json({ error: err.message });
     }
 });
