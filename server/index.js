@@ -272,6 +272,47 @@ app.delete('/api/entries/:id', (req, res) => {
 });
 
 
+// --- SETTINGS ---
+app.get('/api/settings', (req, res) => {
+    try {
+        const rows = db.prepare('SELECT * FROM settings').all();
+        const settings = rows.reduce((acc, row) => {
+            acc[row.key] = JSON.parse(row.value);
+            return acc;
+        }, {});
+        res.json(settings);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/settings', (req, res) => {
+    try {
+        const { settings } = req.body; // Expect { key: value, key2: value2 }
+        const now = new Date().toISOString();
+        const insert = db.prepare(`
+            INSERT OR REPLACE INTO settings (key, value, updatedAt)
+            VALUES (@key, @value, @updatedAt)
+        `);
+
+        const transaction = db.transaction((data) => {
+            for (const [key, value] of Object.entries(data)) {
+                insert.run({
+                    key,
+                    value: JSON.stringify(value),
+                    updatedAt: now
+                });
+            }
+        });
+
+        transaction(settings);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
 // EXPORT
 app.get('/api/export', (req, res) => {
     try {
@@ -280,12 +321,17 @@ app.get('/api/export', (req, res) => {
             ...e,
             repsPerSet: e.repsPerSet ? JSON.parse(e.repsPerSet) : null
         }));
+        const settings = db.prepare('SELECT * FROM settings').all().map(s => ({
+            ...s,
+            value: JSON.parse(s.value)
+        }));
 
         res.json({
             exportDate: new Date().toISOString(),
             data: {
                 variations,
-                entries
+                entries,
+                settings
             }
         });
     } catch (err) {
@@ -306,11 +352,11 @@ app.post('/api/import', (req, res) => {
 
         const importTransaction = db.transaction(() => {
             // 1. Clear existing data (Entries first due to FK)
-            if (tables.entries || tables.variations) {
-                db.prepare('DELETE FROM entries').run();
-            }
-            if (tables.variations) {
-                db.prepare('DELETE FROM variations').run();
+            if (tables.entries || tables.variations || tables.settings) {
+                // If importing anything, we generally assume full restore, but let's be safe.
+                if (tables.entries) db.prepare('DELETE FROM entries').run();
+                if (tables.variations) db.prepare('DELETE FROM variations').run();
+                if (tables.settings) db.prepare('DELETE FROM settings').run();
             }
 
             // 2. Import Variations
@@ -346,21 +392,36 @@ app.post('/api/import', (req, res) => {
                 `);
 
                 for (const e of tables.entries) {
-                    try {
-                        insertEntry.run({
-                            ...e,
-                            repsPerSet: e.repsPerSet && Array.isArray(e.repsPerSet) ? JSON.stringify(e.repsPerSet) : null,
-                            time: e.time || null,
-                            createdAt: e.createdAt || new Date().toISOString(),
-                            updatedAt: e.updatedAt || new Date().toISOString()
-                        });
-                    } catch (entryErr) {
-                        console.error('Failed to insert entry:', e, entryErr);
-                        throw entryErr;
-                    }
+                    importEntrySafe(insertEntry, e);
+                }
+            }
+
+            // 4. Import Settings
+            if (tables.settings) {
+                const insertSetting = db.prepare(`
+                    INSERT INTO settings (key, value, updatedAt)
+                    VALUES (@key, @value, @updatedAt)
+                `);
+                for (const s of tables.settings) {
+                    insertSetting.run({
+                        key: s.key,
+                        value: typeof s.value === 'string' ? s.value : JSON.stringify(s.value),
+                        updatedAt: s.updatedAt || new Date().toISOString()
+                    });
                 }
             }
         });
+
+        // Helper to avoid nesting try-catch block which was bulky
+        function importEntrySafe(stmt, e) {
+            stmt.run({
+                ...e,
+                repsPerSet: e.repsPerSet && Array.isArray(e.repsPerSet) ? JSON.stringify(e.repsPerSet) : null,
+                time: e.time || null,
+                createdAt: e.createdAt || new Date().toISOString(),
+                updatedAt: e.updatedAt || new Date().toISOString()
+            });
+        }
 
         importTransaction();
         res.json({ success: true, message: 'Import completed' });

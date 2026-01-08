@@ -174,6 +174,9 @@ export const SettingsView: React.FC = () => {
                 </div>
             </section>
 
+            {/* Default Configuration Section */}
+            <DefaultConfigSection />
+
             {/* Data Management Section */}
             <section className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
                 <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
@@ -204,5 +207,62 @@ export const SettingsView: React.FC = () => {
                 PushStreak v0.1.0 • Built with ❤️
             </div>
         </div>
+    );
+};
+
+// Sub-component for Default Config to use settings hook cleanly
+import { useSettings } from '../hooks/useSettings';
+
+const DefaultConfigSection = () => {
+    const { settings, updateSettings, isLoading } = useSettings();
+    const [localSets, setLocalSets] = useState('');
+    const [localReps, setLocalReps] = useState('');
+
+    React.useEffect(() => {
+        if (!isLoading) {
+            setLocalSets(settings.defaultSets?.toString() || '3');
+            setLocalReps(settings.defaultReps?.toString() || '10');
+        }
+    }, [settings, isLoading]);
+
+    const handleSave = async () => {
+        await updateSettings({
+            defaultSets: parseInt(localSets) || 3,
+            defaultReps: parseInt(localReps) || 10
+        });
+        alert('Defaults saved!');
+    };
+
+    if (isLoading) return null;
+
+    return (
+        <section className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                <h2 className="font-bold text-gray-800 dark:text-gray-100">Default Configuration</h2>
+            </div>
+            <div className="p-4 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Default Sets</label>
+                        <input
+                            type="number"
+                            value={localSets}
+                            onChange={(e) => setLocalSets(e.target.value)}
+                            className="w-full p-2 border border-blue-200 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Default Reps</label>
+                        <input
+                            type="number"
+                            value={localReps}
+                            onChange={(e) => setLocalReps(e.target.value)}
+                            className="w-full p-2 border border-blue-200 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        />
+                    </div>
+                </div>
+                <button onClick={handleSave} className="w-full bg-blue-600 text-white text-sm py-2 rounded shadow-sm hover:bg-blue-700">Save Preferences</button>
+            </div>
+        </section>
     );
 };

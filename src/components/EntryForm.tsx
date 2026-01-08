@@ -18,8 +18,11 @@ interface EntryFormProps {
     onCancel: () => void;
 }
 
+import { useSettings } from '../hooks/useSettings';
+
 export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, onCancel }) => {
     const { variations, isLoading } = useVariations();
+    const { settings, isLoading: isLoadingSettings } = useSettings();
 
     const [variationId, setVariationId] = useState<string>(initialValues?.variationId || '');
     const [sets, setSets] = useState<number>(initialValues?.sets || 3);
@@ -28,6 +31,19 @@ export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, 
     const [repsPerSet, setRepsPerSet] = useState<string>(initialValues?.repsPerSet?.join(', ') || '10, 10, 10');
     const [time, setTime] = useState<string>(initialValues?.time || format(new Date(), 'HH:mm'));
     const [note, setNote] = useState<string>(initialValues?.note || '');
+
+    // Set default keys if not checking in
+    useEffect(() => {
+        if (!initialValues && !isLoadingSettings && settings.defaultSets !== undefined) {
+            setSets(settings.defaultSets);
+        }
+        if (!initialValues && !isLoadingSettings && settings.defaultReps !== undefined) {
+            setRepsUniform(settings.defaultReps);
+            // Also update repsPerSet default text if Sets matches
+            const arr = Array(settings.defaultSets || 3).fill(settings.defaultReps);
+            setRepsPerSet(arr.join(', '));
+        }
+    }, [settings, isLoadingSettings, initialValues]);
 
     // Set default variation once loaded, ONLY if not editing
     useEffect(() => {

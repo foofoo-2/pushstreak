@@ -45,6 +45,15 @@ const initSchema = () => {
         )
     `);
 
+    // Settings Table
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL, -- JSON stringified value
+            updatedAt TEXT
+        )
+    `);
+
     // Seed default variations if empty
     const count = db.prepare('SELECT count(*) as count FROM variations').get();
     if (count.count === 0) {
