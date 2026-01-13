@@ -3,6 +3,20 @@ import { useStatsData } from '../hooks/useStatsData';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Trophy, Activity, Calendar as CalendarIcon, TrendingUp } from 'lucide-react';
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{label}</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                    Points: <span className="font-medium">{payload[0].value}</span>
+                </p>
+            </div>
+        );
+    }
+    return null;
+};
+
 export const StatsView: React.FC = () => {
     const { stats, chartData, isLoading } = useStatsData();
 
@@ -57,9 +71,7 @@ export const StatsView: React.FC = () => {
                                 minTickGap={30}
                             />
                             <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} />
-                            <Tooltip
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                            />
+                            <Tooltip content={<CustomTooltip />} />
                             <Area type="monotone" dataKey="points" stroke="#3b82f6" fillOpacity={1} fill="url(#colorPoints)" />
                         </AreaChart>
                     </ResponsiveContainer>
