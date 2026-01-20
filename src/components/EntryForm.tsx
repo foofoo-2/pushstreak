@@ -27,7 +27,7 @@ export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, 
     const [variationId, setVariationId] = useState<string>(initialValues?.variationId || '');
     const [sets, setSets] = useState<number>(initialValues?.sets || 3);
     const [repsMode, setRepsMode] = useState<RepsMode>(initialValues?.repsMode || 'uniform');
-    const [repsUniform, setRepsUniform] = useState<number>(initialValues?.repsUniform || 10);
+    const [repsUniform, setRepsUniform] = useState<number | string>(initialValues?.repsUniform || 10);
     const [repsPerSet, setRepsPerSet] = useState<string>(initialValues?.repsPerSet?.join(', ') || '10, 10, 10');
     const [time, setTime] = useState<string>(initialValues?.time || format(new Date(), 'HH:mm'));
     const [note, setNote] = useState<string>(initialValues?.note || '');
@@ -76,13 +76,20 @@ export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, 
                 alert('Invalid reps entered');
                 return;
             }
+        } else {
+            // Validate uniform reps
+            const val = Number(repsUniform);
+            if (!repsUniform || isNaN(val) || val <= 0 || !Number.isInteger(val)) {
+                alert('Please enter a valid positive integer for reps');
+                return;
+            }
         }
 
         onCheckIn(
             variationId,
             sets,
             repsMode,
-            repsMode === 'uniform' ? repsUniform : undefined,
+            repsMode === 'uniform' ? Number(repsUniform) : undefined,
             parsedRepsPerSet,
             time,
             note
@@ -91,7 +98,7 @@ export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, 
 
     const currentVariation = variations.find(v => v.id === variationId);
     const totalRepsCalc = repsMode === 'uniform'
-        ? sets * repsUniform
+        ? sets * (Number(repsUniform) || 0)
         : repsPerSet.split(',').reduce((sum: number, val: string) => sum + (parseInt(val) || 0), 0);
 
     const pointsCalc = currentVariation ? totalRepsCalc * currentVariation.pointsPerRep : 0;
@@ -185,7 +192,10 @@ export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, 
                             <input
                                 type="number"
                                 value={repsUniform}
-                                onChange={(e) => setRepsUniform(parseInt(e.target.value) || 0)}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setRepsUniform(val === '' ? '' : parseInt(val));
+                                }}
                                 className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                             />
                         ) : (
