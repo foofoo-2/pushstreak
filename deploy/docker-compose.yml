@@ -5,7 +5,7 @@ services:
     ports:
       - "3001:3001"
     volumes:
-      - ./data:/data
+      - ../data:/data
     restart: unless-stopped
     environment:
       - NODE_ENV=production
