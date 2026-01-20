@@ -1,0 +1,11 @@
+services:
+  pushstreak:
+    image: ghcr.io/foofoo-2/pushstreak:latest
+    container_name: pushstreak
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
