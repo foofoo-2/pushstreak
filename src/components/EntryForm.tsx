@@ -25,7 +25,7 @@ export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, 
     const { settings, isLoading: isLoadingSettings } = useSettings();
 
     const [variationId, setVariationId] = useState<string>(initialValues?.variationId || '');
-    const [sets, setSets] = useState<number>(initialValues?.sets || 3);
+    const [sets, setSets] = useState<number | ''>(initialValues?.sets || 3);
     const [repsMode, setRepsMode] = useState<RepsMode>(initialValues?.repsMode || 'uniform');
     const [repsUniform, setRepsUniform] = useState<number | string>(initialValues?.repsUniform || 10);
     const [repsPerSet, setRepsPerSet] = useState<string>(initialValues?.repsPerSet?.join(', ') || '10, 10, 10');
@@ -60,7 +60,8 @@ export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, 
             // If we are editing and just opened, don't overwrite with default logic immediately if lengths match
             // But here we want dynamic updates.
             // Simple logic: resize array
-            const newArr = Array(sets).fill('').map((_, i) => current[i] || '0');
+            const s = typeof sets === 'number' ? sets : 0;
+            const newArr = Array(s).fill('').map((_, i) => current[i] || '0');
             setRepsPerSet(newArr.join(', '));
         }
     }, [sets]);
@@ -68,6 +69,11 @@ export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!variationId) return;
+
+        if (typeof sets !== 'number' || sets <= 0 || !Number.isInteger(sets)) {
+            alert('Please enter a valid positive integer for sets');
+            return;
+        }
 
         let parsedRepsPerSet: number[] | undefined;
         if (repsMode === 'perSet') {
@@ -98,7 +104,7 @@ export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, 
 
     const currentVariation = variations.find(v => v.id === variationId);
     const totalRepsCalc = repsMode === 'uniform'
-        ? sets * (Number(repsUniform) || 0)
+        ? (typeof sets === 'number' ? sets : 0) * (Number(repsUniform) || 0)
         : repsPerSet.split(',').reduce((sum: number, val: string) => sum + (parseInt(val) || 0), 0);
 
     const pointsCalc = currentVariation ? totalRepsCalc * currentVariation.pointsPerRep : 0;
@@ -150,15 +156,25 @@ export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, 
                             <div className="flex items-center">
                                 <button
                                     type="button"
-                                    onClick={() => setSets(Math.max(1, sets - 1))}
+                                    onClick={() => setSets(prev => (typeof prev === 'number' ? Math.max(1, prev - 1) : 1))}
                                     className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-l-lg hover:bg-gray-200 dark:hover:bg-gray-600"
                                 >-</button>
-                                <div className="flex-1 text-center border-y border-gray-100 dark:border-gray-700 h-8 flex items-center justify-center font-medium dark:text-gray-200">
-                                    {sets}
-                                </div>
+                                <input
+                                    type="number"
+                                    value={sets}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === '') {
+                                            setSets('');
+                                        } else {
+                                            setSets(parseInt(val));
+                                        }
+                                    }}
+                                    className="flex-1 w-0 text-center border-y border-gray-100 dark:border-gray-700 h-8 flex items-center justify-center font-medium dark:text-gray-200 bg-transparent outline-none appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
                                 <button
                                     type="button"
-                                    onClick={() => setSets(sets + 1)}
+                                    onClick={() => setSets(prev => (typeof prev === 'number' ? prev + 1 : 1))}
                                     className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-r-lg hover:bg-gray-200 dark:hover:bg-gray-600"
                                 >+</button>
                             </div>
