@@ -8,6 +8,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install all dependencies (including devDependencies for build)
+RUN npm install -g npm@latest
 RUN npm ci
 
 # Copy source code
@@ -30,6 +31,7 @@ COPY package.json package-lock.json ./
 # need python/make/g++ for better-sqlite3 build if prebuilds are missing/incompatible, 
 # but node:22-slim might not have them. better-sqlite3 usually provides prebuilds.
 # If issues arise, we might need to add build tools.
+RUN npm install -g npm@latest
 RUN npm ci --only=production
 
 # Copy built assets from builder
