@@ -8,9 +8,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         return (
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{label}</p>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                    Points: <span className="font-medium">{payload[0].value}</span>
-                </p>
+                {payload.map((entry: any, index: number) => (
+                    <p key={index} className="text-sm text-gray-700 dark:text-gray-300">
+                        {entry.name}: <span className="font-medium">{entry.value}</span>
+                    </p>
+                ))}
             </div>
         );
     }
@@ -72,7 +74,8 @@ export const StatsView: React.FC = () => {
                             />
                             <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} />
                             <Tooltip content={<CustomTooltip />} />
-                            <Area type="monotone" dataKey="points" stroke="#3b82f6" fillOpacity={1} fill="url(#colorPoints)" />
+                            <Area type="monotone" dataKey="target" name="Target" stroke="#ef4444" fill="none" strokeDasharray="3 3" strokeWidth={2} />
+                            <Area type="monotone" dataKey="points" name="Points" stroke="#3b82f6" fillOpacity={1} fill="url(#colorPoints)" />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>

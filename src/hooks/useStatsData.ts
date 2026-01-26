@@ -42,7 +42,7 @@ export function useStatsData() {
             date: format(date, 'MMM d'), // "Jan 1"
             shortDate: dateStr,
             points: entriesByDate.get(dateStr) || 0,
-            target: 0 // Could calculate precise target per day if needed, but might be noisy
+            target: getDayOfYear(date)
         };
     });
 

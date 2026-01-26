@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { useVariations } from '../hooks/useVariations';
 import type { Entry, RepsMode } from '../types';
-import { X, Save } from 'lucide-react';
+import { X, Save, Clock } from 'lucide-react';
 
 interface EntryFormProps {
     initialValues?: Entry;
@@ -31,6 +31,7 @@ export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, 
     const [repsPerSet, setRepsPerSet] = useState<string>(initialValues?.repsPerSet?.join(', ') || '10, 10, 10');
     const [time, setTime] = useState<string>(initialValues?.time || format(new Date(), 'HH:mm'));
     const [note, setNote] = useState<string>(initialValues?.note || '');
+    const timeInputRef = useRef<HTMLInputElement>(null);
 
     // Set default keys if not checking in
     useEffect(() => {
@@ -72,6 +73,12 @@ export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, 
 
         if (typeof sets !== 'number' || sets <= 0 || !Number.isInteger(sets)) {
             alert('Please enter a valid positive integer for sets');
+            return;
+        }
+
+        const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+        if (!timeRegex.test(time)) {
+            alert('Please enter a valid time in HH:mm format (00:00 - 23:59)');
             return;
         }
 
@@ -142,12 +149,30 @@ export const EntryForm: React.FC<EntryFormProps> = ({ initialValues, onCheckIn, 
                     {/* Time */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time</label>
-                        <input
-                            type="time"
-                            value={time}
-                            onChange={(e) => setTime(e.target.value)}
-                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                        />
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={time}
+                                onChange={(e) => setTime(e.target.value)}
+                                placeholder="HH:mm"
+                                className="w-full p-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => timeInputRef.current?.showPicker()}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                            >
+                                <Clock size={20} />
+                            </button>
+                            <input
+                                ref={timeInputRef}
+                                type="time"
+                                value={time}
+                                onChange={(e) => setTime(e.target.value)}
+                                className="absolute opacity-0 bottom-0 left-0 w-full -z-10"
+                                tabIndex={-1}
+                            />
+                        </div>
                     </div>
 
                     <div className="flex gap-4">
